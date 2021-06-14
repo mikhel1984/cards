@@ -7,9 +7,10 @@
 # window title
 wm title . Cards 
 wm geometry . +0+20
-#wm iconphoto . "card.gif"
+image create photo icn -file "card.gif"
+wm iconphoto . icn
 
-# main frame
+# main window
 frame .root 
 pack .root -side top -fill x
 
