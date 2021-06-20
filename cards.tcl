@@ -55,6 +55,7 @@ set cardList ""       ;# list of questions - answers
 set currentList ""    ;# list of current entries
 set currentLine ""    ;# current element of base
 set directOrder 1     ;# order or Q/A
+set currentInd -1     ;# list index
 
 # read the card lines
 proc ReadCard {fname} {
@@ -95,19 +96,22 @@ proc ChangeOrder {} {
 }
 
 proc NextString {} {
-  global currentList varQ varA cardList
-  set n [llength $currentList]
-  if { $n == 2 } {        ;# first line
+  global currentList varQ varA cardList currentInd
+  if { $currentInd == 0 } {        ;# first line
     set varA ""
-    set varQ [string trim [lindex $currentList 0]]
-    # remove first element
-    set currentList [lreplace $currentList 0 0]
-  } elseif { $n == 1 } {  ;# second line 
-    set varA [string trim [lindex $currentList 0]]
+    set varQ [string trim [lindex $currentList $currentInd]]
+    incr currentInd
+  } elseif { $currentInd == 1 } {  ;# second line 
+    set varA [string trim [lindex $currentList $currentInd]]
+    incr currentInd
+  } elseif { $currentInd == 2 } {
     GetRandom
-  } else {         ;# $n == 0, need to fill the list
+    set currentInd 0
+    NextString
+  } else {         ;# $currentInd == -1, need to fill the list
     if {[llength $cardList] > 0} {
       GetRandom
+      set currentInd 0
       NextString
     } else {
       set varQ "Для добавления новых слов"
