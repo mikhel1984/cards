@@ -57,7 +57,7 @@ set currentLine ""    ;# current element of base
 set directOrder 1     ;# order or Q/A
 set currentInd -1     ;# list index
 
-# read the card lines
+# Load base from the .card file
 proc ReadCard {fname} {
   global cardName cardList varTime 
   set pos [string last / $fname ]   ;# get substring
@@ -74,7 +74,7 @@ proc ReadCard {fname} {
   close $infile
 }
 
-# show random entry
+# Choose random entry
 proc GetRandom {} {
   global cardList currentList directOrder currentLine
   # ranom string
@@ -88,6 +88,7 @@ proc GetRandom {} {
   }
 }
 
+# Swap question and answer
 proc ChangeOrder {} {
   global directOrder varTime
   set directOrder [expr !$directOrder]
@@ -95,20 +96,21 @@ proc ChangeOrder {} {
   set varTime 0
 }
 
+# Show next element of card
 proc NextString {} {
   global currentList varQ varA cardList currentInd
-  if { $currentInd == 0 } {        ;# first line
+  if { $currentInd == 0 } {        ;# show question
     set varA ""
     set varQ [string trim [lindex $currentList $currentInd]]
     incr currentInd
-  } elseif { $currentInd == 1 } {  ;# second line 
+  } elseif { $currentInd == 1 } {  ;# show answer
     set varA [string trim [lindex $currentList $currentInd]]
     incr currentInd
   } else {
-    if {[llength $cardList] == 0} {
+    if {[llength $cardList] == 0} { ;# no words
       set varQ "Для добавления новых слов"
       set varA "нажмите 'Добавить'"
-    } else {
+    } else {                       ;# get next Q/A
       GetRandom
       set currentInd 0
       NextString
@@ -116,6 +118,7 @@ proc NextString {} {
   }
 }
 
+# Update the status line information
 proc UpdateStatus {} {
   global cardList cardName varTime varState directOrder
   set tm [format "%d:%02d" [expr $varTime/60] [expr $varTime%60]]
@@ -126,8 +129,9 @@ proc UpdateStatus {} {
   after 1000 UpdateStatus
 }
 
+# Load card, update view
 proc OpenCard {} {
-  global cardName
+  global cardName currentInd
   set types {
     {{Cards} {.card}}
   }
@@ -135,9 +139,12 @@ proc OpenCard {} {
   if {$filename ne ""} {
     ReadCard $filename 
     GetRandom
+    set currentInd 0
+    NextString
   }
 }
 
+# Delete current word
 proc DelWord {} {
   global currentLine cardList
   set answer [tk_messageBox -message "Delete" \
@@ -151,6 +158,7 @@ proc DelWord {} {
   }
 }
 
+# Entry dialog window
 proc EntryDialog {} {
   global res
   set q ""
@@ -169,6 +177,7 @@ proc EntryDialog {} {
   return $res
 }
 
+# Add new word to the card
 proc AddWord {} {
   global cardList
   set res ""      ;# TODO fix it
@@ -181,6 +190,7 @@ proc AddWord {} {
   }
 }
 
+# Save changes of the base into the file
 proc UpdateFile {} {
   global cardName cardList
   set outfile [open $cardName w]
@@ -189,6 +199,8 @@ proc UpdateFile {} {
   }
   close $outfile
 }
+
+#### Execute ####
 
 # open card 
 catch {ReadCard "default.card"}
