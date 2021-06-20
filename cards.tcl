@@ -104,18 +104,14 @@ proc NextString {} {
   } elseif { $currentInd == 1 } {  ;# second line 
     set varA [string trim [lindex $currentList $currentInd]]
     incr currentInd
-  } elseif { $currentInd == 2 } {
-    GetRandom
-    set currentInd 0
-    NextString
-  } else {         ;# $currentInd == -1, need to fill the list
-    if {[llength $cardList] > 0} {
+  } else {
+    if {[llength $cardList] == 0} {
+      set varQ "Для добавления новых слов"
+      set varA "нажмите 'Добавить'"
+    } else {
       GetRandom
       set currentInd 0
       NextString
-    } else {
-      set varQ "Для добавления новых слов"
-      set varA "нажмите 'Добавить'"
     }
   }
 }
