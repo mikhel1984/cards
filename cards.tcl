@@ -164,14 +164,15 @@ proc EntryDialog {} {
   set q ""
   toplevel .add     ;# TODO rename
   label .add.lbl -width 40 -text "Q -- A"
-  entry .add.q -width 40 -textvariable q -relief sunken 
+  entry .add.q -width 40 -relief sunken 
   button .add.yes -text Yes -width 10 \
-    -command { set res $q }
+    -command { set res [ .add.q get ]}
   button .add.no -text No -width 10 \
     -command { set res "" }
   pack .add.lbl .add.q -side top -fill x
   pack .add.no .add.yes -side right
   focus .add.q
+  set q ""
   wm protocol .add WM_DELETE_WINDOW { set res "" }
   vwait res
   destroy .add
@@ -183,6 +184,7 @@ proc AddWord {} {
   global cardList
   set res ""      ;# TODO fix it
   set answer [EntryDialog]
+  puts $answer
   if { [regexp {\-\-} $answer] } {
     # update list
     lappend cardList $answer
