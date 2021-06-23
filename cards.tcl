@@ -161,7 +161,6 @@ proc DelWord {} {
 # Entry dialog window
 proc EntryDialog {} {
   global res
-  set q ""
   toplevel .add     ;# TODO rename
   label .add.lbl -width 40 -text "Q -- A"
   entry .add.q -width 40 -relief sunken 
@@ -174,7 +173,7 @@ proc EntryDialog {} {
   focus .add.q
   set q ""
   wm title .add "Add"
-  wm protocol .add WM_DELETE_WINDOW { set res "" }
+  wm protocol .add WM_DELETE_WINDOW [ .add.no cget -command ]
   vwait res
   destroy .add
   return $res
