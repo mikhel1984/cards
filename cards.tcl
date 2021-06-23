@@ -173,6 +173,7 @@ proc EntryDialog {} {
   pack .add.no .add.yes -side right
   focus .add.q
   set q ""
+  wm title .add "Add"
   wm protocol .add WM_DELETE_WINDOW { set res "" }
   vwait res
   destroy .add
@@ -184,7 +185,6 @@ proc AddWord {} {
   global cardList
   set res ""      ;# TODO fix it
   set answer [EntryDialog]
-  puts $answer
   if { [regexp {\-\-} $answer] } {
     # update list
     lappend cardList $answer
