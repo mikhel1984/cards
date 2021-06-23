@@ -172,6 +172,7 @@ proc EntryDialog {} {
   pack .add.lbl .add.q -side top -fill x
   pack .add.no .add.yes -side right
   focus .add.q
+  wm protocol .add WM_DELETE_WINDOW { set res "" }
   vwait res
   destroy .add
   return $res
