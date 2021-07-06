@@ -4,8 +4,13 @@
 #
 #  2021, Stanislav Mikhel
 
+array set nm [list cards Карточки next Далее add Добавить del Удалить open Открыть \
+  fst {Для добавления новых слов} \
+  snd {Нажмите 'Добавить'} \
+]
+
 # window title
-wm title . Cards 
+wm title . $nm(cards)
 wm geometry . +0+20
 image create photo icn -file "card.gif"
 wm iconphoto . icn
@@ -15,10 +20,10 @@ frame .root
 pack .root -side top -fill x
 
 # labels 
-label .root.status -textvariable varState ;# -relief ridge
-label .root.q -textvariable varQ \
+label .root.status -textvariable dct(varState) ;# -relief ridge
+label .root.q -textvariable dct(varQ) \
   -font "Arial 16" -fg "blue" -bg "white"
-label .root.a -textvariable varA \
+label .root.a -textvariable dct(varA) \
   -font "Arial 14" -fg "red" -bg "white" 
 pack .root.q -side top -fill x -expand true
 pack .root.a -side top -fill x -expand true
@@ -26,10 +31,10 @@ pack .root.status -side top -fill x -expand true
 
 # buttons
 frame .btn
-button .btn.next -text "Далее" -width 15 -command NextString
-button .btn.add -text "Добавить" -width 15 -command AddWord
-button .btn.del -text "Удалить" -width 15 -command DelWord
-button .btn.open -text "Открыть" -width 15 -command OpenCard
+button .btn.next -text $nm(next) -width 15 -command NextString
+button .btn.add -text $nm(add) -width 15 -command AddWord
+button .btn.del -text $nm(del) -width 15 -command DelWord
+button .btn.open -text $nm(open) -width 15 -command OpenCard
 pack .btn.next -side left
 pack .btn.add -side left
 pack .btn.del -side left
@@ -45,30 +50,31 @@ bind .root <Control-n> AddWord
 bind .root <Delete> DelWord
 focus .root
 
-# global variables 
-set varQ "Question"   ;# top text line
-set varA "Answer"     ;# bottom text line
-set varState ""       ;# status line
-set varTime 0         ;# number of seconds
-set cardName ""       ;# current card
-set cardList ""       ;# list of questions - answers
-set currentList ""    ;# list of current entries
-set currentLine ""    ;# current element of base
-set directOrder 1     ;# order or Q/A
-set currentInd -1     ;# list index
+# global variables
+global dct
+set dct(varQ) "Question"   ;# top text line
+set dct(varA) "Answer"     ;# bottom text line
+set dct(varState) ""       ;# status line
+set dct(varTime) 0         ;# number of seconds
+set dct(cardName) ""       ;# current card
+set dct(cardList) ""       ;# list of questions - answers
+set dct(currentList) ""    ;# list of current entries
+set dct(currentLine) ""    ;# current element of base
+set dct(directOrder) 1     ;# order or Q/A
+set dct(currentInd) -1     ;# list index
 
 # Load base from the .card file
 proc ReadCard {fname} {
-  global cardName cardList varTime 
+  global dct
   set pos [string last / $fname ]   ;# get substring
-  set cardName [string range $fname [expr $pos+1] end]
-  set cardList ""                   ;# clear
-  set varTime 0
+  set dct(cardName) [string range $fname [expr $pos+1] end]
+  set dct(cardList) ""              ;# clear
+  set dct(varTime) 0
   set infile [open $fname r]
   while { [gets $infile line] >= 0 } {
     # only lines that can be splitted
     if { [regexp {\-\-} $line] } {
-      lappend cardList $line
+      lappend dct(cardList) $line
     }
   }
   close $infile
@@ -76,43 +82,43 @@ proc ReadCard {fname} {
 
 # Choose random entry
 proc GetRandom {} {
-  global cardList currentList directOrder currentLine
+  global dct
   # ranom string
-  set currentLine [lindex $cardList [expr {
-    int(rand()*[llength $cardList])
+  set dct(currentLine) [lindex $dct(cardList) [expr {
+    int(rand()*[llength $dct(cardList)])
   }]]
   # values 
-  set currentList [split [string map {"--" \uffff} $currentLine] \uffff]
-  if { !$directOrder } {
-    set currentList [lreverse $currentList]
+  set dct(currentList) [split [string map {"--" \uffff} $dct(currentLine)] \uffff]
+  if { !$dct(directOrder) } {
+    set dct(currentList) [lreverse $dct(currentList)]
   }
 }
 
 # Swap question and answer
 proc ChangeOrder {} {
-  global directOrder varTime
-  set directOrder [expr !$directOrder]
+  global dct
+  set dct(directOrder) [expr !$dct(directOrder)]
   GetRandom
-  set varTime 0
+  set dct(varTime) 0
 }
 
 # Show next element of card
 proc NextString {} {
-  global currentList varQ varA cardList currentInd
-  if { $currentInd == 0 } {        ;# show question
-    set varA ""
-    set varQ [string trim [lindex $currentList $currentInd]]
-    incr currentInd
-  } elseif { $currentInd == 1 } {  ;# show answer
-    set varA [string trim [lindex $currentList $currentInd]]
-    incr currentInd
+  global dct nm
+  if { $dct(currentInd) == 0 } {        ;# show question
+    set dct(varA) ""
+    set dct(varQ) [string trim [lindex $dct(currentList) $dct(currentInd)]]
+    incr dct(currentInd)
+  } elseif { $dct(currentInd) == 1 } {  ;# show answer
+    set dct(varA) [string trim [lindex $dct(currentList) $dct(currentInd)]]
+    incr dct(currentInd)
   } else {
-    if {[llength $cardList] == 0} { ;# no words
-      set varQ "Для добавления новых слов"
-      set varA "нажмите 'Добавить'"
+    if {[llength $dct(cardList)] == 0} { ;# no words
+      set dct(varQ) $nm(fst)
+      set dct(varA) $nm(snd)
     } else {                       ;# get next Q/A
       GetRandom
-      set currentInd 0
+      set dct(currentInd) 0
       NextString
     }
   }
@@ -120,18 +126,18 @@ proc NextString {} {
 
 # Update the status line information
 proc UpdateStatus {} {
-  global cardList cardName varTime varState directOrder
-  set tm [format "%d:%02d" [expr $varTime/60] [expr $varTime%60]]
+  global dct
+  set tm [format "%d:%02d" [expr $dct(varTime)/60] [expr $dct(varTime)%60]]
   set ord "R D"
   set sep "   |   "
-  set varState "$cardName $sep #[llength $cardList] $sep $tm $sep [lindex $ord $directOrder]"  
-  incr varTime
+  set dct(varState) "$dct(cardName) $sep #[llength $dct(cardList)] $sep $tm $sep [lindex $ord $dct(directOrder)]"  
+  incr dct(varTime)
   after 1000 UpdateStatus
 }
 
 # Load card, update view
 proc OpenCard {} {
-  global cardName currentInd
+  global dct
   set types {
     {{Cards} {.card}}
   }
@@ -139,20 +145,20 @@ proc OpenCard {} {
   if {$filename ne ""} {
     ReadCard $filename 
     GetRandom
-    set currentInd 0
+    set dct(currentInd) 0
     NextString
   }
 }
 
 # Delete current word
 proc DelWord {} {
-  global currentLine cardList
+  global dct
   set answer [tk_messageBox -message "Delete" \
-    -detail $currentLine -type yesno -icon question]
+    -detail $dct(currentLine) -type yesno -icon question]
   if {$answer} {
     # remove line
-    set n [lsearch $cardList $currentLine] 
-    set cardList [lreplace $cardList $n $n]
+    set n [lsearch $dct(cardList) $dct(currentLine)] 
+    set dct(cardList) [lreplace $dct(cardList) $n $n]
     # save
     UpdateFile
   }
@@ -183,12 +189,12 @@ proc EntryDialog {} {
 
 # Add new word to the card
 proc AddWord {} {
-  global cardList
+  global dct
   set res ""      ;# TODO fix it
   set answer [EntryDialog]
   if { [regexp {\-\-} $answer] } {
     # update list
-    lappend cardList $answer
+    lappend dct(cardList) $answer
     # save
     UpdateFile
   }
@@ -196,9 +202,9 @@ proc AddWord {} {
 
 # Save changes of the base into the file
 proc UpdateFile {} {
-  global cardName cardList
-  set outfile [open $cardName w]
-  foreach ln $cardList {
+  global dct
+  set outfile [open $dct(cardName) w]
+  foreach ln $dct(cardList) {
     puts $outfile $ln
   }
   close $outfile
