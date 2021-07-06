@@ -8,6 +8,8 @@ array set nm [list cards Карточки next Далее add Добавить d
   fst {Для добавления новых слов} \
   snd {Нажмите 'Добавить'} \
 ]
+# environment
+global dct
 
 # window title
 wm title . $nm(cards)
@@ -22,9 +24,10 @@ pack .root -side top -fill x
 # labels 
 label .root.status -textvariable dct(varState) ;# -relief ridge
 label .root.q -textvariable dct(varQ) \
-  -font "Arial 16" -fg "blue" -bg "white"
-label .root.a -textvariable dct(varA) \
-  -font "Arial 14" -fg "red" -bg "white" 
+  -font "Arial 16" -fg "red" -bg "white"
+set dct(ans) [ttk::combobox .root.a -textvariable dct(varA) \
+  -font "Arial 14" -foreground "blue" -background "white" \
+  -values "" -justify center -postcommand {focus .root}]
 pack .root.q -side top -fill x -expand true
 pack .root.a -side top -fill x -expand true
 pack .root.status -side top -fill x -expand true
@@ -51,7 +54,6 @@ bind .root <Delete> DelWord
 focus .root
 
 # global variables
-global dct
 set dct(varQ) "Question"   ;# top text line
 set dct(varA) "Answer"     ;# bottom text line
 set dct(varState) ""       ;# status line
@@ -60,7 +62,7 @@ set dct(cardName) ""       ;# current card
 set dct(cardList) ""       ;# list of questions - answers
 set dct(currentList) ""    ;# list of current entries
 set dct(currentLine) ""    ;# current element of base
-set dct(directOrder) 1     ;# order or Q/A
+set dct(directOrder) 0     ;# order or Q/A
 set dct(currentInd) -1     ;# list index
 
 # Load base from the .card file
@@ -89,9 +91,7 @@ proc GetRandom {} {
   }]]
   # values 
   set dct(currentList) [split [string map {"--" \uffff} $dct(currentLine)] \uffff]
-  if { !$dct(directOrder) } {
-    set dct(currentList) [lreverse $dct(currentList)]
-  }
+  #if { !$dct(directOrder) } { set dct(currentList) [lreverse $dct(currentList)] }
 }
 
 # Swap question and answer
@@ -107,10 +107,11 @@ proc NextString {} {
   global dct nm
   if { $dct(currentInd) == 0 } {        ;# show question
     set dct(varA) ""
-    set dct(varQ) [string trim [lindex $dct(currentList) $dct(currentInd)]]
+    set dct(varQ) [string trim [lindex $dct(currentList) $dct(directOrder)]]
     incr dct(currentInd)
   } elseif { $dct(currentInd) == 1 } {  ;# show answer
-    set dct(varA) [string trim [lindex $dct(currentList) $dct(currentInd)]]
+    set dct(varA) [string trim [lindex $dct(currentList) [expr !$dct(directOrder)]]]
+    $dct(ans) config -values [lrange $dct(currentList) 2 end]
     incr dct(currentInd)
   } else {
     if {[llength $dct(cardList)] == 0} { ;# no words
@@ -128,7 +129,7 @@ proc NextString {} {
 proc UpdateStatus {} {
   global dct
   set tm [format "%d:%02d" [expr $dct(varTime)/60] [expr $dct(varTime)%60]]
-  set ord "R D"
+  set ord {Dir Rev}
   set sep "   |   "
   set dct(varState) "$dct(cardName) $sep #[llength $dct(cardList)] $sep $tm $sep [lindex $ord $dct(directOrder)]"  
   incr dct(varTime)
