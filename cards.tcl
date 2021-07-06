@@ -22,7 +22,7 @@ frame .root
 pack .root -side top -fill x
 
 # labels 
-label .root.status -textvariable dct(varState) ;# -relief ridge
+label .root.status -textvariable dct(varState) -relief raised
 label .root.q -textvariable dct(varQ) \
   -font "Arial 16" -fg "red" -bg "white"
 set dct(ans) [ttk::combobox .root.a -textvariable dct(varA) \
@@ -90,8 +90,11 @@ proc GetRandom {} {
     int(rand()*[llength $dct(cardList)])
   }]]
   # values 
-  set dct(currentList) [split [string map {"--" \uffff} $dct(currentLine)] \uffff]
-  #if { !$dct(directOrder) } { set dct(currentList) [lreverse $dct(currentList)] }
+  set dct(currentList) {}
+  set ln [split [string map {"--" \uffff} $dct(currentLine)] \uffff]
+  foreach x $ln {
+    lappend dct(currentList) [string trim $x]
+  }
 }
 
 # Swap question and answer
@@ -105,15 +108,18 @@ proc ChangeOrder {} {
 # Show next element of card
 proc NextString {} {
   global dct nm
-  if { $dct(currentInd) == 0 } {        ;# show question
+  if { $dct(currentInd) == 0 } {
+    # show question
     set dct(varA) ""
-    set dct(varQ) [string trim [lindex $dct(currentList) $dct(directOrder)]]
+    set dct(varQ) [lindex $dct(currentList) $dct(directOrder)]
     incr dct(currentInd)
-  } elseif { $dct(currentInd) == 1 } {  ;# show answer
-    set dct(varA) [string trim [lindex $dct(currentList) [expr !$dct(directOrder)]]]
+  } elseif { $dct(currentInd) == 1 } {
+    # show answer
+    set dct(varA) [lindex $dct(currentList) [expr !$dct(directOrder)]]
     $dct(ans) config -values [lrange $dct(currentList) 2 end]
     incr dct(currentInd)
   } else {
+    # unexpected index
     if {[llength $dct(cardList)] == 0} { ;# no words
       set dct(varQ) $nm(fst)
       set dct(varA) $nm(snd)
@@ -168,7 +174,7 @@ proc DelWord {} {
 # Entry dialog window
 proc EntryDialog {} {
   global res
-  toplevel .add     ;# TODO rename
+  toplevel .add 
   label .add.lbl -width 40 -text "Q -- A"
   entry .add.q -width 40 -relief sunken 
   button .add.yes -text Yes -width 10 \
