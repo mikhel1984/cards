@@ -170,6 +170,8 @@ proc EntryDialog {} {
     -command { set res "" }
   pack .add.lbl .add.q -side top -fill x
   pack .add.no .add.yes -side right
+  bind .add.q <Return> [ .add.yes cget -command ]
+  bind .add.q <Escape> [ .add.no cget -command ]
   focus .add.q
   set q ""
   wm title .add "Add"
