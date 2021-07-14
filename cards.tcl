@@ -50,6 +50,7 @@ bind .root <Control-o> OpenCard
 bind .root <space> NextString
 bind .root <Control-q> exit
 bind .root <Control-n> AddWord
+bind .root <Control-g> MakeGroup
 bind .root <Delete> DelWord
 focus .root
 
@@ -166,12 +167,14 @@ proc DelWord {} {
     # remove line
     set n [lsearch $dct(cardList) $dct(currentLine)] 
     set dct(cardList) [lreplace $dct(cardList) $n $n]
-    # make backup
-    set fid [open "stock.card" a]
-    puts $fid $dct(currentLine)
-    close $fid
-    # save updated base
-    UpdateFile
+    if {$dct(cardName) ne "GROUP"} {
+      # make backup
+      set fid [open "stock.card" a]
+      puts $fid $dct(currentLine)
+      close $fid
+      # save updated base
+      UpdateFile
+    }
   }
 }
 
@@ -207,7 +210,9 @@ proc AddWord {} {
     # update list
     lappend dct(cardList) $answer
     # save
-    UpdateFile
+    if {$dct(cardName) ne "GROUP"} {
+      UpdateFile
+    }
   }
 }
 
@@ -219,6 +224,24 @@ proc UpdateFile {} {
     puts $outfile $ln
   }
   close $outfile
+}
+
+# Prepare group of 7 elements
+proc MakeGroup {} {
+  global dct
+  set base $dct(cardList) 
+  # remove random lines
+  while {[llength $base] > 7} {
+    set n [expr { int(rand()*[llength $base]) }]
+    set base [lreplace $base $n $n]
+  }
+  # update base
+  set dct(varTime) 0
+  set dct(cardName) "GROUP"
+  set dct(cardList) $base
+  GetRandom
+  set dct(currentInd) 0
+  NextString
 }
 
 #### Execute ####
