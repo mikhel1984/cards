@@ -166,7 +166,11 @@ proc DelWord {} {
     # remove line
     set n [lsearch $dct(cardList) $dct(currentLine)] 
     set dct(cardList) [lreplace $dct(cardList) $n $n]
-    # save
+    # make backup
+    set fid [open "stock.card" a]
+    puts $fid $dct(currentLine)
+    close $fid
+    # save updated base
     UpdateFile
   }
 }
