@@ -9,7 +9,7 @@ array set nm [list cards Карточки next Далее add Добавить d
   snd {Нажмите 'Добавить'} \
 ]
 # environment
-global dct
+global env
 
 # window title
 wm title . $nm(cards)
@@ -18,10 +18,10 @@ image create photo icn -file "card.gif"
 wm iconphoto . icn
 
 # labels 
-label .status -textvariable dct(varState) -relief raised
-label .q -textvariable dct(varQ) \
+label .status -textvariable env(varState) -relief raised
+label .q -textvariable env(varQ) \
   -font "Arial 16" -fg "red" -bg "white"
-set dct(ans) [ttk::combobox .a -textvariable dct(varA) \
+set env(ans) [ttk::combobox .a -textvariable env(varA) \
   -font "Arial 14" -foreground "blue" -background "white" \
   -values "" -justify center -postcommand {focus .q}]
 
@@ -47,29 +47,29 @@ bind .q <Delete> DelWord
 focus .q
 
 # global variables
-set dct(varQ) "Question"   ;# top text line
-set dct(varA) "Answer"     ;# bottom text line
-set dct(varState) ""       ;# status line
-set dct(varTime) 0         ;# number of seconds
-set dct(cardName) ""       ;# current card
-set dct(cardList) ""       ;# list of questions - answers
-set dct(currentList) ""    ;# list of current entries
-set dct(currentLine) ""    ;# current element of base
-set dct(directOrder) 0     ;# order or Q/A
-set dct(currentInd) -1     ;# list index
+set env(varQ) "Question"   ;# top text line
+set env(varA) "Answer"     ;# bottom text line
+set env(varState) ""       ;# status line
+set env(varTime) 0         ;# number of seconds
+set env(cardName) ""       ;# current card
+set env(cardList) ""       ;# list of questions - answers
+set env(currentList) ""    ;# list of current entries
+set env(currentLine) ""    ;# current element of base
+set env(directOrder) 0     ;# order or Q/A
+set env(currentInd) -1     ;# list index
 
 # Load base from the .card file
 proc ReadCard {fname} {
-  global dct
+  global env
   set pos [string last / $fname ]   ;# get substring
-  set dct(cardName) [string range $fname [expr $pos+1] end]
-  set dct(cardList) ""              ;# clear
-  set dct(varTime) 0
+  set env(cardName) [string range $fname [expr $pos+1] end]
+  set env(cardList) ""              ;# clear
+  set env(varTime) 0
   set infile [open $fname r]
   while { [gets $infile line] >= 0 } {
     # only lines that can be splitted
     if { [regexp {\-\-} $line] } {
-      lappend dct(cardList) $line
+      lappend env(cardList) $line
     }
   }
   close $infile
@@ -77,48 +77,48 @@ proc ReadCard {fname} {
 
 # Choose random entry
 proc GetRandom {} {
-  global dct
+  global env
   # ranom string
-  set dct(currentLine) [lindex $dct(cardList) [expr {
-    int(rand()*[llength $dct(cardList)])
+  set env(currentLine) [lindex $env(cardList) [expr {
+    int(rand()*[llength $env(cardList)])
   }]]
   # values 
-  set dct(currentList) {}
-  set ln [split [string map {"--" \uffff} $dct(currentLine)] \uffff]
+  set env(currentList) {}
+  set ln [split [string map {"--" \uffff} $env(currentLine)] \uffff]
   foreach x $ln {
-    lappend dct(currentList) [string trim $x]
+    lappend env(currentList) [string trim $x]
   }
 }
 
 # Swap question and answer
 proc ChangeOrder {} {
-  global dct
-  set dct(directOrder) [expr !$dct(directOrder)]
+  global env
+  set env(directOrder) [expr !$env(directOrder)]
   GetRandom
-  set dct(varTime) 0
+  set env(varTime) 0
 }
 
 # Show next element of card
 proc NextString {} {
-  global dct nm
-  if { $dct(currentInd) == 0 } {
+  global env nm
+  if { $env(currentInd) == 0 } {
     # show question
-    set dct(varA) ""
-    set dct(varQ) [lindex $dct(currentList) $dct(directOrder)]
-    incr dct(currentInd)
-  } elseif { $dct(currentInd) == 1 } {
+    set env(varA) ""
+    set env(varQ) [lindex $env(currentList) $env(directOrder)]
+    incr env(currentInd)
+  } elseif { $env(currentInd) == 1 } {
     # show answer
-    set dct(varA) [lindex $dct(currentList) [expr !$dct(directOrder)]]
-    $dct(ans) config -values [lrange $dct(currentList) 2 end]
-    incr dct(currentInd)
+    set env(varA) [lindex $env(currentList) [expr !$env(directOrder)]]
+    $env(ans) config -values [lrange $env(currentList) 2 end]
+    incr env(currentInd)
   } else {
     # unexpected index
-    if {[llength $dct(cardList)] == 0} { ;# no words
-      set dct(varQ) $nm(fst)
-      set dct(varA) $nm(snd)
+    if {[llength $env(cardList)] == 0} { ;# no words
+      set env(varQ) $nm(fst)
+      set env(varA) $nm(snd)
     } else {                       ;# get next Q/A
       GetRandom
-      set dct(currentInd) 0
+      set env(currentInd) 0
       NextString
     }
   }
@@ -126,18 +126,18 @@ proc NextString {} {
 
 # Update the status line information
 proc UpdateStatus {} {
-  global dct
-  set tm [format "%d:%02d" [expr $dct(varTime)/60] [expr $dct(varTime)%60]]
+  global env
+  set tm [format "%d:%02d" [expr $env(varTime)/60] [expr $env(varTime)%60]]
   set ord {Dir Rev}
   set sep "   |   "
-  set dct(varState) "$dct(cardName) $sep #[llength $dct(cardList)] $sep $tm $sep [lindex $ord $dct(directOrder)]"  
-  incr dct(varTime)
+  set env(varState) "$env(cardName) $sep #[llength $env(cardList)] $sep $tm $sep [lindex $ord $env(directOrder)]"  
+  incr env(varTime)
   after 1000 UpdateStatus
 }
 
 # Load card, update view
 proc OpenCard {} {
-  global dct
+  global env
   set types {
     {{Cards} {.card}}
   }
@@ -145,24 +145,24 @@ proc OpenCard {} {
   if {$filename ne ""} {
     ReadCard $filename 
     GetRandom
-    set dct(currentInd) 0
+    set env(currentInd) 0
     NextString
   }
 }
 
 # Delete current word
 proc DelWord {} {
-  global dct
+  global env
   set answer [tk_messageBox -message "Delete" \
-    -detail $dct(currentLine) -type yesno -icon question]
+    -detail $env(currentLine) -type yesno -icon question]
   if {$answer} {
     # remove line
-    set n [lsearch $dct(cardList) $dct(currentLine)] 
-    set dct(cardList) [lreplace $dct(cardList) $n $n]
-    if {$dct(cardName) ne "GROUP"} {
+    set n [lsearch $env(cardList) $env(currentLine)] 
+    set env(cardList) [lreplace $env(cardList) $n $n]
+    if {$env(cardName) ne "GROUP"} {
       # make backup
       set fid [open "stock.card" a]
-      puts $fid $dct(currentLine)
+      puts $fid $env(currentLine)
       close $fid
       # save updated base
       UpdateFile
@@ -195,14 +195,14 @@ proc EntryDialog {} {
 
 # Add new word to the card
 proc AddWord {} {
-  global dct
+  global env
   set res ""      ;# TODO fix it
   set answer [EntryDialog]
   if { [regexp {\-\-} $answer] } {
     # update list
-    lappend dct(cardList) $answer
+    lappend env(cardList) $answer
     # save
-    if {$dct(cardName) ne "GROUP"} {
+    if {$env(cardName) ne "GROUP"} {
       UpdateFile
     }
   }
@@ -210,9 +210,9 @@ proc AddWord {} {
 
 # Save changes of the base into the file
 proc UpdateFile {} {
-  global dct
-  set outfile [open $dct(cardName) w]
-  foreach ln $dct(cardList) {
+  global env
+  set outfile [open $env(cardName) w]
+  foreach ln $env(cardList) {
     puts $outfile $ln
   }
   close $outfile
@@ -220,19 +220,19 @@ proc UpdateFile {} {
 
 # Prepare group of 7 elements
 proc MakeGroup {} {
-  global dct
-  set base $dct(cardList) 
+  global env
+  set base $env(cardList) 
   # remove random lines
   while {[llength $base] > 7} {
     set n [expr { int(rand()*[llength $base]) }]
     set base [lreplace $base $n $n]
   }
   # update base
-  set dct(varTime) 0
-  set dct(cardName) "GROUP"
-  set dct(cardList) $base
+  set env(varTime) 0
+  set env(cardName) "GROUP"
+  set env(cardList) $base
   GetRandom
-  set dct(currentInd) 0
+  set env(currentInd) 0
   NextString
 }
 
