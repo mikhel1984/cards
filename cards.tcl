@@ -17,42 +17,34 @@ wm geometry . +0+20
 image create photo icn -file "card.gif"
 wm iconphoto . icn
 
-# main window
-frame .root 
-pack .root -side top -fill x
-
 # labels 
-label .root.status -textvariable dct(varState) -relief raised
-label .root.q -textvariable dct(varQ) \
+label .status -textvariable dct(varState) -relief raised
+label .q -textvariable dct(varQ) \
   -font "Arial 16" -fg "red" -bg "white"
-set dct(ans) [ttk::combobox .root.a -textvariable dct(varA) \
+set dct(ans) [ttk::combobox .a -textvariable dct(varA) \
   -font "Arial 14" -foreground "blue" -background "white" \
-  -values "" -justify center -postcommand {focus .root}]
-pack .root.q -side top -fill x -expand true
-pack .root.a -side top -fill x -expand true
-pack .root.status -side top -fill x -expand true
+  -values "" -justify center -postcommand {focus .q}]
 
 # buttons
-frame .btn
-button .btn.next -text $nm(next) -width 15 -command NextString
-button .btn.add -text $nm(add) -width 15 -command AddWord
-button .btn.del -text $nm(del) -width 15 -command DelWord
-button .btn.open -text $nm(open) -width 15 -command OpenCard
-pack .btn.next -side left
-pack .btn.add -side left
-pack .btn.del -side left
-pack .btn.open -side left
-pack .btn -side bottom -fill x -expand true
+button .next -text $nm(next) -width 15 -command NextString
+button .wadd -text $nm(add) -width 15 -command AddWord
+button .del -text $nm(del) -width 15 -command DelWord
+button .open -text $nm(open) -width 15 -command OpenCard
+
+grid .q -columnspan 4 -sticky news
+grid .a -columnspan 4 -sticky news
+grid .next .wadd .del .open -sticky news
+grid .status -columnspan 4 -sticky news
 
 # key bindings 
-bind .root <Control-r> ChangeOrder
-bind .root <Control-o> OpenCard
-bind .root <space> NextString
-bind .root <Control-q> exit
-bind .root <Control-n> AddWord
-bind .root <Control-g> MakeGroup
-bind .root <Delete> DelWord
-focus .root
+bind .q <Control-r> ChangeOrder
+bind .q <Control-o> OpenCard
+bind .q <space> NextString
+bind .q <Control-q> exit
+bind .q <Control-n> AddWord
+bind .q <Control-g> MakeGroup
+bind .q <Delete> DelWord
+focus .q
 
 # global variables
 set dct(varQ) "Question"   ;# top text line
