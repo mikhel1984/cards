@@ -4,6 +4,7 @@
 #
 #  2021, Stanislav Mikhel
 
+# translate
 array set nm [list cards Карточки next Далее add Добавить del Удалить open Открыть \
   fst {Для добавления новых слов} \
   snd {Нажмите 'Добавить'} \
@@ -139,7 +140,8 @@ proc UpdateStatus {} {
 proc OpenCard {} {
   global env
   set types {
-    {{Cards} {.card}}
+    {"Cards" ".card"}
+    {"All" "*"}
   }
   set filename [tk_getOpenFile -filetypes $types]
   if {$filename ne ""} {

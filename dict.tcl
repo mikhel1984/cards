@@ -2,8 +2,9 @@
 
 # Make dictionary from the "cards".
 #
-#  2021, Stanislav Mikhel
+# 2021, Stanislav Mikhel
 
+# translate
 array set nm [list dictionary "Словарь" \
   fwd " -> рус " bwd " рус -> "
 ]
@@ -13,6 +14,8 @@ set env(hgt) 10
 
 # title
 wm title . $nm(dictionary)
+image create photo icn -file "card.gif"
+wm iconphoto . icn
 
 # list of words
 ttk::notebook .n
