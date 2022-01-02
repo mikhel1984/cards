@@ -25,7 +25,11 @@ wm iconphoto . icn
 label .map -text "$nm(convto)\n-= $lang =-" -padx 10 -pady 10
 button .open -text $nm(choose) -command Convert
 grid .map -sticky news
-grid .open 
+grid .open
+
+# key binding
+bind . <Return> Convert
+bind . <Escape> exit
 
 # Read file and convert characters
 proc Convert {} {
