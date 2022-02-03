@@ -97,6 +97,9 @@ proc ChangeOrder {} {
   set env(directOrder) [expr !$env(directOrder)]
   GetRandom
   set env(varTime) 0
+  # clear lines
+  set env(varA) ""
+  set env(varQ) ""
 }
 
 # Show next element of card
